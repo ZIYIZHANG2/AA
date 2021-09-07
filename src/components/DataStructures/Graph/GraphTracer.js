@@ -380,6 +380,8 @@ class GraphTracer extends Tracer {
 
     // Calculates node's x and y.
     marked = {};
+    const leafNodeSizeAlloc = 30; // horizontal size allocated per leaf node under a subtree node
+    const verticalGap = 80; // vertical gap between nodes. incremented every level.
     const recursivePosition = (node, h, v, x, y) => {
       marked[node.id] = true;
       node.x = x;
@@ -392,13 +394,13 @@ class GraphTracer extends Tracer {
         let y1 = y;
         // For left child
         if (linkedNode.id === 2 * node.id) {
-          x1 -= leafCounts[node.id] * 30;
+          x1 -= leafCounts[node.id] * leafNodeSizeAlloc;
         }
         // For right child
         if (linkedNode.id === (2 * node.id + 1)) {
-          x1 += leafCounts[node.id] * 30;
+          x1 += leafCounts[node.id] * leafNodeSizeAlloc;
         }
-        y1 += 80;
+        y1 += verticalGap;
         recursivePosition(linkedNode, h, v + 1, x1, y1);
         h += leafCounts[linkedNode.id];
       }
