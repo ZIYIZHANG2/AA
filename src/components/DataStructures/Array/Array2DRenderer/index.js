@@ -21,7 +21,7 @@
 
 import React from 'react';
 // import Array1DRenderer from '../Array1DRenderer/index';
-import { motion } from 'framer-motion';
+import { motion, AnimateSharedLayout } from 'framer-motion';
 import Renderer from '../../common/Renderer/index';
 import styles from './Array2DRenderer.module.scss';
 import { classes } from '../../common/util';
@@ -52,7 +52,6 @@ class Array2DRenderer extends Renderer {
 
   renderData() {
     const { data, algo } = this.props.data;
-
     const isArray1D = true;
     // const isArray1D = this instanceof Array1DRenderer;
     let longestRow = data.reduce(
@@ -70,6 +69,7 @@ class Array2DRenderer extends Renderer {
         }}
       >
         <tbody>
+          {/* Indexes */}
           <tr className={styles.row}>
             {!isArray1D && <td className={classes(styles.col, styles.index)} />}
             {longestRow.map((_, i) => {
@@ -84,6 +84,7 @@ class Array2DRenderer extends Renderer {
               );
             })}
           </tr>
+          {/* Values */}
           {data.map((row, i) => (
             <tr className={styles.row} key={i}>
               {!isArray1D && (
@@ -100,16 +101,45 @@ class Array2DRenderer extends Renderer {
                     col.selected && styles.selected,
                     col.patched && styles.patched,
                     col.sorted && styles.sorted,
+                    col.style && col.style.backgroundStyle,
                   )}
                   key={col.key}
                 >
-                  <span className={styles.value}>
+                  <span className={classes(
+                    styles.value,
+                    col.style && col.style.textStyle,
+                  )}>
                     {this.toString(col.value)}
                   </span>
                 </motion.td>
               ))}
             </tr>
           ))}
+          {/* Variable pointers */}
+          {data.map(
+            (row, i) => isArray1D && ( // variable pointer only working for 1D arrays
+                <AnimateSharedLayout>
+                  <tr layout className={styles.row} key={i}>
+                    {row.map((col) => (
+                      <td
+                        className={classes(styles.col, styles.variables)}
+                        key={`vars-${col.key}`}
+                      >
+                        {col.variables.map((v) => (
+                          <motion.p
+                            layoutId={v}
+                            key={v}
+                            className={styles.variable}
+                          >
+                            {v}
+                          </motion.p>
+                        ))}
+                      </td>
+                    ))}
+                  </tr>
+                </AnimateSharedLayout>
+            ),
+          )}
         </tbody>
       </table>
     );
