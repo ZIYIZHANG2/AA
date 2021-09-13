@@ -1,0 +1,59 @@
+/* eslint-disable no-prototype-builtins */
+import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
+import { GlobalContext } from '../../context/GlobalState';
+import { GlobalActions } from '../../context/actions';
+import LineNumHighLight from './LineNumHighLight';
+import BottomButton from './BottomButton';
+import LineExplanation from './LineExplanation';
+
+function Pseudocode({ fontSize, fontSizeIncrement }) {
+  const { algorithm, dispatch } = useContext(GlobalContext);
+  const show = !!algorithm.hasOwnProperty('pseudocode');
+  var explanation = "";
+
+  const onExpand = () => {
+    Object.keys(algorithm.pseudocode).forEach((key) => {
+      dispatch(GlobalActions.COLLAPSE, { codeblockname: key, expandOrCollapase: true });
+    });
+  };
+
+  const onCollapse = () => {
+    Object.keys(algorithm.pseudocode).forEach((key) => {
+      if (key !== 'Main') {
+        dispatch(GlobalActions.COLLAPSE, { codeblockname: key, expandOrCollapase: false });
+      }
+    });
+  };
+
+  if(algorithm.pseudocode){
+    for(var eachpart in algorithm.pseudocode){
+      algorithm.pseudocode[eachpart].forEach(element =>{
+        if(algorithm.bookmark && element.bookmark === algorithm.bookmark){
+          explanation = element.explanation
+        }
+      })
+    }
+  }
+
+  return (
+    show ? (
+      <>
+        <LineNumHighLight fontSize={fontSize} fontSizeIncrement={fontSizeIncrement} />
+        <div className="btnPanel">
+          <BottomButton onClick={onExpand} name="Expand All" />
+          <BottomButton onClick={onCollapse} name="Collapse All" />
+        </div>
+        { explanation ? (
+        <LineExplanation explanation={explanation} fontSize={fontSize} fontSizeIncrement={fontSizeIncrement}/>
+        ) : ''}
+      </>
+    ) : null
+  );
+}
+
+export default Pseudocode;
+Pseudocode.propTypes = {
+  fontSize: PropTypes.number.isRequired,
+  fontSizeIncrement: PropTypes.number.isRequired,
+};
