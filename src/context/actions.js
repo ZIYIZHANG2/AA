@@ -51,6 +51,19 @@ function getFullPseudocodeTree(blockName, collapse, pseudocode, acc) {
   return [];
 }
 
+function getParent(blockName, pseudocode) {
+  if (blockName === undefined || blockName === 'Main') {
+    return undefined;
+  }
+  for (const name of Object.keys(pseudocode)) {
+    for (let i = 0; i < pseudocode[name].length; i += 1) {
+      if (Object.prototype.hasOwnProperty.call(pseudocode[name][i], 'ref') !== undefined && pseudocode[name][i].ref === blockName) {
+        return name;
+      }
+    }
+  }
+}
+
 // Given some pseudocode and a block collapse state, is bookmark visible on screen?
 function isBookmarkVisible(pseudocode, collapse, bookmark) {
   // collapse contains names of the sections and their collapsed state
@@ -61,7 +74,8 @@ function isBookmarkVisible(pseudocode, collapse, bookmark) {
       // looking at all the pseudocode elements
       if (pseudocode[blockName][i].bookmark === bookmark) {
         containingBlock = blockName;
-        if (collapse[containingBlock]) {
+
+        if (collapse[containingBlock] || (containingBlock.includes('ForLoop') && collapse[getParent(containingBlock, pseudocode)])) {
           // i.e. if this node is open, then we need to step into its children for highlighting purposes once again
           previousState = [];
           return true;
@@ -104,7 +118,7 @@ function getCollapseController(procedureAlgorithms) {
     const algorithmCollapseController = {};
     for (const modeName of Object.keys(procedureAlgorithms[algorithmName].pseudocode)) {
       algorithmCollapseController[modeName] = getCollapseControllerForSinglePseudocode(
-        procedureAlgorithms[algorithmName].pseudocode[modeName],
+        procedureAlgorithms[algorithmName].pseudocode[modeName]
       );
     }
     collapseController[algorithmName] = algorithmCollapseController;
@@ -131,9 +145,7 @@ export const GlobalActions = {
   // load an algorithm by returning its relevant components
   LOAD_ALGORITHM: (state, params) => {
     const data = algorithms[params.name];
-    const {
-      param, name, explanation, extraInfo, pseudocode, instructions,
-    } = data;
+    const { param, name, explanation, extraInfo, pseudocode, instructions } = data;
     previousState = [];
     const procedurePseudocode = pseudocode[params.mode];
     addLineExplanation(procedurePseudocode);
@@ -154,9 +166,7 @@ export const GlobalActions = {
   // run an algorithm by executing the algorithm
   RUN_ALGORITHM: (state, params) => {
     const data = algorithms[params.name];
-    const {
-      param, controller, name, explanation, extraInfo, pseudocode, instructions,
-    } = data;
+    const { param, controller, name, explanation, extraInfo, pseudocode, instructions } = data;
     const procedurePseudocode = pseudocode[params.mode];
 
     // here we pass a function reference to Chunker() because we may want to initialise
