@@ -155,6 +155,8 @@ export default {
           vis.array.assignVariable('n', nVal - 1);
         } else vis.array.removeVariable('j');
         // else only clear 'j'
+
+        } else vis.array.removeVariable('j'); // else only clear 'j'
         unhighlight(vis, index);
       }, [n, i]);
 
@@ -173,6 +175,7 @@ export default {
         unhighlight(vis, index);
         unhighlight(vis, 0, false);
         vis.array.sorted(index);
+        vis.heap.sorted(index + 1);
         vis.array.assignVariable('n', index - 1);
       }, [n - 1]);
       n -= 1;
@@ -233,6 +236,8 @@ export default {
       vis.array.clearVariables();
       vis.array.deselect(0);
       vis.array.sorted(0);
+      vis.heap.sorted(1);
+      unhighlight(vis, 0, true);
     });
     // for test
     return A;
