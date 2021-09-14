@@ -156,7 +156,6 @@ export default {
         } else vis.array.removeVariable('j');
         // else only clear 'j'
 
-        } else vis.array.removeVariable('j'); // else only clear 'j'
         unhighlight(vis, index);
       }, [n, i]);
 
