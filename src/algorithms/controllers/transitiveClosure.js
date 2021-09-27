@@ -58,11 +58,17 @@ export default {
         g.array.selectRow(k, 0, numOfNodes - 1, '3');
       }, [k]);
 
+      // run the second for loop
+      chunker.add(3, (g, k) => {
+
+      }, [k]);
+
       for (let i = 0; i < numOfNodes; i++) {
         if (!nodes[k][i][k]) {
           chunker.add(4, (g, i, k) => {
             g.array.deselect(i, k, i, k);
             g.array.select(i, k);
+            g.graph.setPointerNode(i, 'i', k, 'k');
           }, [i, k]); // move along columns
         } else {
           chunker.add(4, (g, i, k) => {
@@ -71,13 +77,20 @@ export default {
             g.array.select(i, k);
             g.graph.visit(i);
             g.graph.visit(k, i);
+            g.graph.setPointerNode(i, 'i', k, 'k');
           }, [i, k]);
+
+          // run the third for loop
+          chunker.add(5, (g, k) => {
+
+          }, [k]);
 
           for (let j = 0; j < numOfNodes; j++) {
             if (!nodes[k][k][j]) {
               chunker.add(6, (g, k, j) => {
                 g.array.deselect(k, j, k, j);
                 g.array.select(k, j, k, j, '1');
+                g.graph.setPointerNode(j, 'j');
               }, [k, j]); // move along rows (green)
             } else {
               chunker.add(6, (g, j, k) => {
@@ -85,6 +98,7 @@ export default {
                 g.array.deselect(k, j, k, j);
                 g.array.select(k, j, k, j, '1');
                 g.graph.visit1(j, k, 1);
+                g.graph.setPointerNode(j, 'j');
               }, [j, k]);
 
               chunker.add(7, (g, i, j) => {
@@ -105,6 +119,7 @@ export default {
                   g.array.deselect(k, j, k, j);
                   g.array.select(k, j, k, j, '3');
                   g.graph.leave1(j, k);
+                  g.graph.unsetPointerNode(j, 'j');
                 }, [i, k, j]);
               }
 
@@ -131,6 +146,7 @@ export default {
                 g.array.deselect(k, j, k, j);
                 g.array.select(k, j, k, j, '3');
                 g.graph.leave1(j, k);
+                g.graph.unsetPointerNode(j, 'j');
                 // if(j === size - 1)return 3
               }, [i, k, j]);
             }
@@ -140,18 +156,21 @@ export default {
             // remove blue
             g.graph.leave(k, i);
             g.graph.leave(i);
+            g.graph.unsetPointerNode(i, 'i');
             // if(i === size-1) return 2
           }, [i, k]);
         }
         chunker.add(3, (g, i, k) => {
           g.array.deselect(i, k);
           g.array.select(i, k, i, k, '2');
+          g.graph.unsetPointerNode(i, 'i');
           // if(i === size-1) return 2
         }, [i, k]);
       }
       chunker.add(2, (g, k) => {
         g.array.deselectRow(k, 0, numOfNodes - 1);
         g.array.deselectCol(k, 0, numOfNodes - 1);
+        g.graph.unsetPointerNode(k, 'k');
       }, [k]);
     }
   },
