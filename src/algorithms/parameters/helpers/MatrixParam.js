@@ -11,7 +11,7 @@ import {
   makeData,
   singleNumberValidCheck,
   errorParamMsg,
-  successParamMsg,
+  successParamMsg, matrixValidCheck,
 } from './ParamHelper';
 
 import useParam from '../../../context/useParam';
@@ -22,6 +22,15 @@ import { ReactComponent as AddIcon } from '../../../assets/icons/add.svg';
 import { ReactComponent as MinusIcon } from '../../../assets/icons/minus.svg';
 
 import ControlButton from '../../../components/common/ControlButton';
+
+// SIM Mouse click
+const mouseClickEvents = ['mousedown', 'click', 'mouseup'];
+function simulateMouseClick(element) {
+  // eslint-disable-next-line max-len
+  mouseClickEvents.forEach((mouseEventType) => element.dispatchEvent(new MouseEvent(mouseEventType, {
+    view: window, bubbles: true, cancelable: true, buttons: 1,
+  })));
+}
 
 /**
  * This matrix param component can be used when
@@ -37,6 +46,7 @@ function MatrixParam({
   setMessage,
   ALGORITHM_NAME,
   EXAMPLE,
+  EXAMPLE2,
 }) {
   // const [size, setSize] = useState(defaultSize);
   const [size, setSize] = useState(defaultSize);
@@ -54,6 +64,11 @@ function MatrixParam({
     setData(newData);
     setOriginalData(newData);
   }, [size, min, max, symmetric]);
+
+  useEffect(() => {
+    const element = document.querySelector('button[id="startBtnGrp"]');
+    simulateMouseClick(element);
+  }, []);
 
   // Reset the matrix to the inital set
   const resetData = () => {
@@ -100,6 +115,13 @@ function MatrixParam({
     });
 
     if (matrix.length !== size || matrix[0].length !== size) return [];
+    if (name === 'prim') {
+      if (matrixValidCheck(matrix) === false) {
+        setMessage(errorParamMsg(ALGORITHM_NAME, EXAMPLE2));
+        // eslint-disable-next-line consistent-return
+        return [];
+      }
+    }
 
     return matrix;
   };
@@ -111,7 +133,7 @@ function MatrixParam({
     const matrix = getMatrix();
 
     if (matrix.length !== 0) {
-      setMessage(successParamMsg(ALGORITHM_NAME));
+      // setMessage(successParamMsg(ALGORITHM_NAME));
       dispatch(GlobalActions.RUN_ALGORITHM, {
         name,
         mode,
@@ -139,12 +161,12 @@ function MatrixParam({
           id="refreshMatrix"
           onClick={resetData}
         />
-        <button className="matrixBtn" onClick={handleSearch}>
+        <button className="matrixBtn" onClick={handleSearch} id="startBtnGrp">
           {buttonMessage}
         </button>
       </div>
 
-      <Table columns={columns} data={data} updateData={updateData} />
+      <Table columns={columns} data={data} updateData={updateData} algo={name} />
     </div>
   );
 }

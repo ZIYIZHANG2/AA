@@ -12,6 +12,7 @@
 /* eslint-disable max-len */
 /* eslint-disable object-curly-newline */
 import React from 'react';
+import { motion } from 'framer-motion';
 import Renderer from '../../common/Renderer/index';
 import { classes, distance } from '../../common/util';
 import styles from './GraphRenderer.module.scss';
@@ -49,6 +50,23 @@ function switchColor(visitedCount1) {
   }
   return fillStyle;
 }
+
+function calculateControlCord(x1, y1, x2, y2) {
+  // Slope for line that perpendicular to (x1,y1) (x2,y2)
+  const slope = -(x2 - x1) / (y2 - y1);
+  let cx; let cy;
+  const direction = (x1 > y1) ? 1 : -1;
+
+  if (y1 - y2 < 1) {
+    cx = (x2 + x1) / 2;
+    cy = (y1 + y2) / 2 + direction * 30;
+  } else {
+    cx = (x2 + x1) / 2 + direction * 30;
+    cy = slope * (cx - (x1 + x2) / 2) + (y1 + y2) / 2;
+  }
+  return { cx, cy };
+}
+
 class GraphRenderer extends Renderer {
   constructor(props) {
     super(props);
@@ -93,10 +111,10 @@ class GraphRenderer extends Renderer {
     const { nodes, edges, isDirected, isWeighted, dimensions, text } = this.props.data;
     const { baseWidth, baseHeight, nodeRadius, arrowGap, nodeWeightGap, edgeWeightGap } = dimensions;
     const viewBox = [
-      (this.centerX - baseWidth / 2) * this.zoom,
-      (this.centerY - baseHeight / 2) * this.zoom,
-      baseWidth * this.zoom,
-      baseHeight * this.zoom,
+      (this.centerX - baseWidth / 2) / this.zoom,
+      (this.centerY - baseHeight / 2) / this.zoom,
+      baseWidth / this.zoom,
+      baseHeight / this.zoom,
     ];
     const root = nodes[0];
     let rootX = 0;
@@ -136,23 +154,37 @@ class GraphRenderer extends Renderer {
             const my = (sy + ey) / 2;
             const dx = ex - sx;
             const dy = ey - sy;
-            const degree = Math.atan2(dy, dx) / Math.PI * 180;
             if (isDirected) {
               const length = Math.sqrt(dx * dx + dy * dy);
               if (length !== 0) {
-                ex = sx + dx / length * (length - nodeRadius - arrowGap);
-                ey = sy + dy / length * (length - nodeRadius - arrowGap);
+                ex = sx + (dx / length) * (length - nodeRadius - arrowGap);
+                ey = sy + (dy / length) * (length - nodeRadius - arrowGap);
               }
             }
-
+            let pathSvg = null;
+            if (this.props.data.isInterConnected(source, target)) {
+              const { cx, cy } = calculateControlCord(sx, sy, ex, ey);
+              pathSvg = `M${sx},${sy} Q${cx},${cy},${ex},${ey}`;
+            } else {
+              pathSvg = `M${sx},${sy} L${ex},${ey}`;
+            }
+            // console.log(sx,sy,ex,ey,cx,cy);
             return (
-              <g className={classes(styles.edge, selectedCount && styles.selected, !selectedCount && visitedCount && styles.visited, switchColor(visitedCount1))}
-                 key={`${source}-${target}`}>
-                <path d={`M${sx},${sy} L${ex},${ey}`} className={classes(styles.line, isDirected && styles.directed)} />
+              <g
+                className={classes(
+                  styles.edge,
+                  targetNode.sorted && styles.sorted,
+                  selectedCount && styles.selected,
+                  !selectedCount && visitedCount && styles.visited,
+                  switchColor(visitedCount1),
+                )}
+                key={`${source}-${target}`}
+              >
+                <path d={pathSvg} className={classes(styles.line, isDirected && styles.directed)} />
                 {
                   isWeighted &&
                   <g transform={`translate(${mx},${my})`}>
-                    <text className={styles.weight} transform={`rotate(${degree})`}
+                    <text className={styles.weight} transform="rotate(0)"
                           y={-edgeWeightGap}>{this.toString(weight)}</text>
                   </g>
                 }
@@ -160,28 +192,36 @@ class GraphRenderer extends Renderer {
             );
           })
         }
-        {
-          nodes.map(node => {
-            const { id, x, y, weight, visitedCount, selectedCount, value, visitedCount1, isPointer, pointerText } = node;
-            // only when selectedCount is 1, then highlight the node
-            const selectNode = selectedCount === 1;
-            return (
-              <g className={classes(styles.node, selectNode && styles.selected, visitedCount && styles.visited, switchColor(visitedCount1))}
-                 key={id} transform={`translate(${x},${y})`}>
-                <circle className={styles.circle} r={nodeRadius} />
-                <text className={styles.id}>{value}</text>
-                {
-                  isWeighted &&
-                  <text className={styles.weight} x={nodeRadius + nodeWeightGap}>{this.toString(weight)}</text>
-                }
-                {
+        {/* node graph */}
+        {nodes.map((node) => {
+          const { x, y, weight, visitedCount, visitedCount1, selectedCount, value, key, style, sorted, isPointer, pointerText } = node;
+          // only when selectedCount is 1, then highlight the node
+          const selectNode = selectedCount === 1;
+          const visitedNode = visitedCount === 1;
+          return (
+            <motion.g
+                animate={{ x, y }}
+                initial={false}
+                transition={{ duration: 1 }}
+                className={classes(styles.node, selectNode && styles.selected, sorted && styles.sorted, visitedNode && styles.visited, switchColor(visitedCount1))}
+                key={key}
+            >
+              <circle className={classes(styles.circle, style && style.backgroundStyle)} r={nodeRadius} />
+              <text className={classes(styles.id, style && style.textStyle)}>{value}</text>
+              {
+                isWeighted && (
+                  <text className={styles.weight} x={nodeRadius + nodeWeightGap}>
+                    {this.toString(weight)}
+                  </text>
+                )
+              }
+              {
                   isPointer &&
                   <text className={styles.weight} x={nodeRadius + nodeWeightGap}>{this.toString(pointerText)}</text>
                 }
-              </g>
-            );
-          })
-        }
+            </motion.g>
+          );
+        })}
         <text style={{ fill: '#ff0000' }} textAnchor="middle" x={rootX} y={rootY - 20}>{text}</text>
       </svg>
     );
@@ -189,4 +229,3 @@ class GraphRenderer extends Renderer {
 }
 
 export default GraphRenderer;
-

@@ -18,12 +18,14 @@
 import Tracer from '../common/Tracer';
 import Array2DRenderer from './Array2DRenderer';
 
-class Element {
-  constructor(value) {
+export class Element {
+  constructor(value, key) {
     this.value = value;
     this.patched = false;
     this.selected = false;
     this.sorted = false;
+    this.key = key;
+    this.variables = [];
   }
 }
 
@@ -37,7 +39,7 @@ class Array2DTracer extends Tracer {
    * @param {string} algo used to mark if it is a specific algorithm
    */
   set(array2d = [], algo) {
-    this.data = array2d.map(array1d => [...array1d].map(value => new Element(value)));
+    this.data = array2d.map(array1d => [...array1d].map((value, i) => new Element(value, i)));
     this.algo = algo;
     super.set();
   }
@@ -58,7 +60,6 @@ class Array2DTracer extends Tracer {
     if (!this.data[x][y]) this.data[x][y] = new Element();
     this.data[x][y].sorted = true;
   }
-
 
   select(sx, sy, ex = sx, ey = sy, c = '0') { // Color blue
     for (let x = sx; x <= ex; x++) {
@@ -84,6 +85,16 @@ class Array2DTracer extends Tracer {
     }
   }
 
+  // style = { backgroundStyle: , textStyle: }
+  styledSelect(style, sx, sy, ex = sx, ey = sy) {
+    for (let x = sx; x <= ex; x++) {
+      for (let y = sy; y <= ey; y++) {
+        this.data[x][y].selected = true;
+        this.data[x][y].style = style;
+      }
+    }
+  }
+
   selectRow(x, sy, ey, c = '0') {
     this.select(x, sy, x, ey, c);
   }
@@ -99,6 +110,7 @@ class Array2DTracer extends Tracer {
         this.data[x][y].selected1 = false;
         this.data[x][y].selected2 = false;
         this.data[x][y].selected3 = false;
+        this.data[x][y].style = undefined;
       }
     }
   }

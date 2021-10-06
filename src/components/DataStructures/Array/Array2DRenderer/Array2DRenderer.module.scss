@@ -12,7 +12,8 @@
     .col {
       display: table-cell;
       text-align: center;
-      min-width: 28px;
+      min-width: 8px;
+      width: 28px;
       background-color: var(--array-2d-row-col-bg);
       border: 1px solid var(--array-2d-row-col-border);
       padding: 0 4px;
@@ -21,6 +22,11 @@
         font-size: 12px;
         color: var(--array-2d-row-col-value-color);
 
+      }
+
+      .variable {
+        font-size: 18px;
+        color: var(--array-2d-row-col-sorted);
       }
 
       &.selected {
@@ -78,7 +84,18 @@
         background: var(--array-2d-row-col-bg-index);
         border: var(--array-2d-row-col-border-index);
         color: var(--array-2d-row-col-color-index);
+        
       }
+
+      &.variables {
+        background: var(--array-2d-row-col-bg-index);
+        border: var(--array-2d-row-col-border-index);
+        color: var(--array-2d-row-col-color-index);
+        vertical-align: text-top;
+        
+      }
+
+      
     }
   }
 }

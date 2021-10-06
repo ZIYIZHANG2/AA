@@ -3,7 +3,6 @@ import React from 'react';
 import Denque from 'denque';
 import ParamMsg from './ParamMsg';
 
-
 export const commaSeparatedNumberListValidCheck = (t) => {
   const regex = /^[0-9]+(,[0-9]+)*$/g;
   return t.match(regex);
@@ -24,6 +23,24 @@ export const singleNumberValidCheck = (t) => {
   return t.match(regex);
 };
 
+// eslint-disable-next-line consistent-return
+export const matrixValidCheck = (m) => {
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < m.length; i++) {
+    // eslint-disable-next-line no-plusplus
+    for (let j = 0; j < i; j++) {
+      if (m[i][j] !== m[j][i]) {
+        return false;
+      }
+    }
+    if (m[i][i] !== 0) {
+      return false;
+    }
+  }
+  return true;
+};
+
+
 function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
@@ -38,15 +55,11 @@ export const genRandNumList = (num, min, max) => {
   return list;
 };
 
-/**
- *
- * @param {string} type algorithm type
- */
 export const successParamMsg = (type) => (
   <ParamMsg
     logWarning={false}
-    logTag="Great success!"
-    logMsg={`The ${type} algorithm is now ready for execution.`}
+    logTag=""
+    logMsg=""
   />
 );
 
@@ -122,7 +135,7 @@ export const makeData = (len, min, max, symmetric) => {
     }
     arr.push(data);
   }
-  if (len === 4) {
+  if (len === 4 && symmetric !== true) {
     arr = [
       {
         col0: '0',

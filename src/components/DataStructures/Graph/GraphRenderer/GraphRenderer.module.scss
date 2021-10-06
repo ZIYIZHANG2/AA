@@ -3,8 +3,6 @@
 
 // --graph-node-fill: orange;
 
-
-
 .graph {
   flex: 1;
   align-self: stretch;
@@ -16,9 +14,15 @@
       stroke-width: 1;
     }
 
+    .rect{
+      fill: var(--graph-node-circle-fill);
+      stroke: var(--graph-node-circle-stroke);
+      stroke-width: 1;
+    }
+
     .id {
       fill: var(--graph-node-id-fill);
-      alignment-baseline: central;
+      dominant-baseline: central;
       text-anchor: middle;
     }
 
@@ -33,21 +37,33 @@
       .circle {
         fill: var(--graph-node-circle-fill-selected);
         stroke: var(--graph-node-circle-stroke-selected);
-
+      }
+      .rect {
+        fill: var(--graph-node-circle-fill-selected);
+        stroke: var(--graph-node-circle-stroke-selected);
       }
       .id {
         fill: var(--graph-node-id-fill-selected);
       }
     }
 
-
     &.visited {
       .circle {
         fill: var(--graph-node-circle-fill-visited);
         stroke: var(--graph-node-circle-stroke-visited);
       }
+      .rect {
+        fill: var(--graph-node-circle-fill-visited);
+        stroke: var(--graph-node-circle-stroke-visited);
+      }
       .id {
         fill: var(--graph-node-id-fill-visited);
+      }
+    }
+
+    &.sorted {
+      .id {
+        fill: var(--graph-node-id-fill-sorted);
       }
     }
 
@@ -76,6 +92,7 @@
     .line {
       stroke: var(--graph-edge-line-stroke);
       stroke-width: 3.5;
+      fill: none;
 
       &.directed {
         marker-end: url(#markerArrow);
@@ -99,6 +116,12 @@
 
       .weight {
         fill: var(--graph-edge-weight-fill-selected);
+      }
+    }
+
+    &.sorted {
+      .line {
+        stroke-width: 0;
       }
     }
 
